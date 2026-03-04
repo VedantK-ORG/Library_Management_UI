@@ -1,12 +1,20 @@
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .database import SessionLocal, engine
 from . import tables, crud, schemas
 
+
 tables.base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def get_db():
     db = SessionLocal()
@@ -155,3 +163,8 @@ def delete_book(book_id: int, db: Session = Depends(get_db)):
     if not deleted:
         raise HTTPException(status_code=404, detail="Book not found")
     return {"message": "Book deleted"}
+
+@app.get("/stats/books-per-category", response_model=list[schemas.NameCountResponse])
+def books_category(db: Session = Depends(get_db)):
+    data = crud.books_per_category(db)
+    return [{"name": name, "count": count} for name, count in data]
