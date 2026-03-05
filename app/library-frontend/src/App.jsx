@@ -29,9 +29,6 @@ function App() {
           Authors
         </button>
 
-        <button onClick={() => setView("stats")}>
-          Stats
-        </button>
 
       </div>
 
